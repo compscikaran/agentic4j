@@ -4,9 +4,7 @@ A Manager to manage communication and work between multiple AI Agents
 
 ## How the idea came about
 
-I have been exploring Agentic workflows and multi-agent applications since some time and was trying to see how we can have a framework which manages the same.
-The key building block which was required was a communication channel which could support logical blocks which act on messages, maintain a global state and support pub/sub model.
-Having created a port of Redux for Java called [Dux4j](https://github.com/compscikaran/dux4j) I realized that it would fit this use-case perfectly and hence Agentic4j was born.
+I was fascinated by [Andrew NG's talk at Sequioa Capital](https://www.youtube.com/watch?v=sal78ACtGTc) and was trying to see if a framework for doing the same existing in Java which was built around Langchang4j which is an unoffical port of its namesake from python ecosystem. The key building block which was required was a communication channel which could support logical blocks which act on messages, maintain a global state and support pub/sub model. And then it struck me such a global functional state manager already exists in the UI World in the form of Redux / Flux. If only there was a port of Redux available in Java and low and behold I wrote the exact same thing around a year ago called [Dux4j](https://github.com/compscikaran/dux4j). (What a coincidence !) Hence was born Agentic4j.
 
 
 ## [Get Started](https://github.com/compscikaran/agentic4j/wiki)
