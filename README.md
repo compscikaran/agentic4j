@@ -1,6 +1,6 @@
 # Agentic4J
 
-A Manager to manage communication and work between multiple AI Agents
+A way to define workflows involving multiple AI Agents
 
 ## How the idea came about
 
