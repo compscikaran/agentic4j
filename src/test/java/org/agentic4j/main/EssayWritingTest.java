@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ public class EssayWritingTest {
         graph.addAgent(WRITER_AGENT, writer, List.of(CRITIC_AGENT));
         graph.addAgent(CRITIC_AGENT, critic, List.of(WRITER_AGENT));
         graph.addAgent(AgenticWorkflow.USER, null, List.of(WRITER_AGENT));
-        workflow.init();
+        workflow.init(Optional.empty());
 
         workflow.addUserMessage("Write a 500 word essay on Fyodor Dostoyevsky");
         log.info(workflow.fetchFinalOutput(WRITER_AGENT));

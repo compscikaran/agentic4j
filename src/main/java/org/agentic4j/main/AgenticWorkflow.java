@@ -2,6 +2,8 @@ package org.agentic4j.main;
 
 import org.agentic4j.api.Channel;
 import org.agentic4j.api.Message;
+import org.flux.store.api.Action;
+import org.flux.store.api.Middleware;
 import org.flux.store.api.Reducer;
 import org.flux.store.main.DuxStore;
 import org.flux.store.main.DuxStoreBuilder;
@@ -10,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class AgenticWorkflow {
 
@@ -28,11 +32,16 @@ public class AgenticWorkflow {
         this.graph = graph;
     }
 
-    public void init() {
+    public void init(Optional<Predicate<Message>> circuitBreaker) {
         log.debug("##### Setting up Dux backend #####");
-        this.store = new DuxStoreBuilder<Channel>()
-                .setInitialState(new Channel())
-                .setReducer(getChannelReducer()).build();
+        DuxStoreBuilder<Channel> builder = new DuxStoreBuilder<Channel>();
+        builder.setInitialState(new Channel());
+        log.debug("##### Setting up Dux Reducer ######");
+        builder.setReducer(getChannelReducer()).build();
+        log.debug("##### Setting up Circuit breaker ######");
+        if(circuitBreaker.isPresent())
+            builder.setMiddleware(createCircuitBreaker(circuitBreaker.get()));
+        this.store = builder.build();
         log.debug("##### Setting up logging of messages #####");
         setupLogger();
         log.debug("##### Setting up subscriber functions based on AgentGraph #####");
@@ -79,6 +88,18 @@ public class AgenticWorkflow {
             return state;
         };
         return reducer;
+    }
+
+    private  Middleware<Channel> createCircuitBreaker(Predicate<Message> logic) {
+        return (store, next, action) -> {
+            Message message = (Message) action.getPayload();
+            if(logic.test(message)) {
+                this.endLoop();
+                Action<String> modifiedAction = Utilities.actionCreator(action.getType(), "");
+                next.accept(modifiedAction);
+            }
+            next.accept(action);
+        };
     }
 
     public void addUserMessage(String chat) {
