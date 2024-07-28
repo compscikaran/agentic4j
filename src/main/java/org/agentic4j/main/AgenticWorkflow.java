@@ -6,11 +6,16 @@ import org.flux.store.api.Reducer;
 import org.flux.store.main.DuxStore;
 import org.flux.store.main.DuxStoreBuilder;
 import org.flux.store.utils.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 public class AgenticWorkflow {
+
+    private static final Logger log = LoggerFactory.getLogger(AgenticWorkflow.class);
+
 
     public static final String ADD_MESSAGE = "addMessage";
     public static final String STOP_LOOP = "stopLoop";
@@ -24,15 +29,17 @@ public class AgenticWorkflow {
     }
 
     public void init() {
-        Reducer<Channel> reducer = getChannelReducer();
+        log.debug("##### Setting up Dux backend #####");
         this.store = new DuxStoreBuilder<Channel>()
                 .setInitialState(new Channel())
-                .setReducer(reducer).build();
+                .setReducer(getChannelReducer()).build();
+        log.debug("##### Setting up logging of messages #####");
         setupLogger();
-        setupListenersFromGraph();
+        log.debug("##### Setting up subscriber functions based on AgentGraph #####");
+        setupSubscribersFromGraph();
     }
 
-    private void setupListenersFromGraph() {
+    private void setupSubscribersFromGraph() {
         for(String agent: this.graph.getAgentGraph().keySet()) {
             Consumer<Channel> subscriber = (state) -> {
                 if(state.getStopLoop())
@@ -57,7 +64,7 @@ public class AgenticWorkflow {
     private void setupLogger() {
         store.subscribe((state) -> {
             Message data = state.getUserMessages().getLast();
-            System.out.println(data.sender() + ": \n" + data.message() + "\n");
+            log.info(String.format("%s:\n%s\n", data.sender(),data.message()));
         });
     }
 
@@ -76,7 +83,7 @@ public class AgenticWorkflow {
 
     public void addUserMessage(String chat) {
         Message input = new Message(USER, chat);
-        System.out.println("###### Workflow is starting... ######");
+        log.info("###### Workflow is starting... ######");
         this.store.dispatch(Utilities.actionCreator(ADD_MESSAGE, input));
     }
 

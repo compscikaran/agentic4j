@@ -1,10 +1,14 @@
 package org.agentic4j.utils;
 
 import dev.langchain4j.agent.tool.Tool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StopWorkflowTool {
 
-    private Runnable callback;
+    private static final Logger log = LoggerFactory.getLogger(StopWorkflowTool.class);
+
+    private final Runnable callback;
 
     public StopWorkflowTool(Runnable callback) {
         this.callback = callback;
@@ -12,7 +16,7 @@ public class StopWorkflowTool {
 
     @Tool("Stops the workflow")
     public void stopTool() {
-        System.out.println("###### Workflow is done... ######");
+        log.info("###### Workflow is done... ######");
         callback.run();
     }
 }
