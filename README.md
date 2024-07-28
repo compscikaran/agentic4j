@@ -1,7 +1,5 @@
 # Agentic4J
 
-![workflow](https://github.com/compscikaran/agentic4j/actions/workflows/ci-build.yml/badge.svg)
-
 A Manager to manage communication and work between multiple AI Agents
 
 ## How the idea came about
