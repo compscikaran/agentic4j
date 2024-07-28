@@ -90,4 +90,16 @@ public class AgenticWorkflow {
     public void endLoop() {
         this.store.dispatch(Utilities.actionCreator(STOP_LOOP, null));
     }
+
+    public String fetchFinalOutput(String agentName) {
+        log.info("###### Fetching final result of Workflow: #######");
+        List<Message> allMessages = this.store.getState().getUserMessages();
+        for (int i = allMessages.size() - 1; i > 0; i--) {
+            Message currentMessage = allMessages.get(i);
+            if(currentMessage.sender().equalsIgnoreCase(agentName)) {
+                return currentMessage.message();
+            }
+        }
+        return "";
+    }
 }

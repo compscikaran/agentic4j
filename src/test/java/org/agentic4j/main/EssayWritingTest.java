@@ -28,17 +28,11 @@ public class EssayWritingTest {
     public void canWriteEssay() {
         AgenticGraph graph = new AgenticGraph();
         AgenticWorkflow workflow = new AgenticWorkflow(graph);
-        Runnable stopSignal = workflow::endLoop;
-
-        ChatMemory memory = MessageWindowChatMemory.builder().chatMemoryStore(new InMemoryChatMemoryStore()).maxMessages(5).build();
-        ChatMemory memory2 = MessageWindowChatMemory.builder().chatMemoryStore(new InMemoryChatMemoryStore()).maxMessages(5).build();
 
         Agent writer = AgentFactory.createAgent(WRITER_AGENT, Prompts.WRITER, "gpt-4o-mini")
-                .chatMemory(memory)
                 .build();
-        Agent critic = AgentFactory.createAgent(CRITIC_AGENT, Prompts.CRITIC, "gpt-4o").
-                chatMemory(memory2)
-                .tools(new StopWorkflowTool(stopSignal))
+        Agent critic = AgentFactory.createAgent(CRITIC_AGENT, Prompts.CRITIC, "gpt-4o")
+                .tools(new StopWorkflowTool(workflow::endLoop))
                 .build();
 
         graph.addAgent(WRITER_AGENT, writer, List.of(CRITIC_AGENT));
@@ -47,6 +41,7 @@ public class EssayWritingTest {
         workflow.init();
 
         workflow.addUserMessage("Write a 500 word essay on Fyodor Dostoyevsky");
+        log.info(workflow.fetchFinalOutput(WRITER_AGENT));
     }
 
 }
