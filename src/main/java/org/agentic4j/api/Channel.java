@@ -11,11 +11,12 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class Channel implements State {
 
-    private List<Message> userMessages;
+    private List<Message> userMessages = new ArrayList<>();
+    private Boolean stopLoop = false;
+
+
 
     @Override
     public State clone() {

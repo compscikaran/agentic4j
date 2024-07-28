@@ -1,5 +1,6 @@
 package org.agentic4j.main;
 
+import lombok.Getter;
 import org.agentic4j.api.Agent;
 
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 public class AgenticGraph {
 
+    @Getter
     private Map<String, List<String>> agentGraph;
     private Map<String, Agent> agentRepo;
 
@@ -21,15 +23,12 @@ public class AgenticGraph {
         this.agentGraph.put(agentName, listeners);
     }
 
-    public void chatToAgent(String agentName, String message) {
+    public String chatToAgent(String agentName, String message) {
         if(agentRepo.containsKey(agentName)) {
-            agentRepo.get(agentName).chat(message);
+            return agentRepo.get(agentName).chat(message);
         } else {
             throw new IllegalArgumentException("Agent does not exist");
         }
     }
 
-    public Map<String, List<String>> getAgentGraph() {
-        return agentGraph;
-    }
 }
