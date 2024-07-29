@@ -11,10 +11,13 @@ import org.agentic4j.api.Agent;
 import org.agentic4j.main.utils.AgentFactory;
 import org.agentic4j.main.utils.Prompts;
 import org.agentic4j.utils.StopWorkflowTool;
+import org.agentic4j.utils.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +30,10 @@ public class EssayWritingTest {
     @Test
     public void canWriteEssay() {
         AgenticGraph graph = new AgenticGraph();
-        AgenticWorkflow workflow = new AgenticWorkflow(graph);
+        AgenticWorkflow workflow = new AgenticWorkflowBuilder()
+                .setGraph(graph)
+                .setTerminalAgent(WRITER_AGENT)
+                .build();
 
         Agent writer = AgentFactory.createAgent(WRITER_AGENT, Prompts.WRITER, "gpt-4o-mini")
                 .build();
@@ -38,10 +44,9 @@ public class EssayWritingTest {
         graph.addAgent(WRITER_AGENT, writer, List.of(CRITIC_AGENT));
         graph.addAgent(CRITIC_AGENT, critic, List.of(WRITER_AGENT));
         graph.addAgent(AgenticWorkflow.USER, null, List.of(WRITER_AGENT));
-        workflow.init();
 
         workflow.addUserMessage("Write a 500 word essay on Fyodor Dostoyevsky");
-        log.info(workflow.fetchFinalOutput(WRITER_AGENT));
+        log.info(workflow.fetchFinalOutput());
     }
 
 }
