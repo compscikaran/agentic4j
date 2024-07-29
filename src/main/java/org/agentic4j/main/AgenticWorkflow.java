@@ -27,25 +27,35 @@ public class AgenticWorkflow {
 
     private final AgenticGraph graph;
     private DuxStore<Channel> store;
+    private Predicate<Message> circuitBreaker;
+    private String terminalAgent;
+    private Boolean isInitialized = false;
 
-    public AgenticWorkflow(AgenticGraph graph) {
+    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> circuitBreaker, String terminalAgent) {
         this.graph = graph;
+        this.circuitBreaker = circuitBreaker;
+        this.terminalAgent = terminalAgent;
     }
 
-    public void init(Optional<Predicate<Message>> circuitBreaker) {
+    public void init() {
+        log.debug("##### Checking input parameters #####");
+
+        if(!this.graph.getAgentGraph().keySet().contains(this.terminalAgent)) {
+            throw new IllegalArgumentException("Terminal Agent not found in AgenticGraph");
+        }
+
         log.debug("##### Setting up Dux backend #####");
         DuxStoreBuilder<Channel> builder = new DuxStoreBuilder<Channel>();
         builder.setInitialState(new Channel());
         log.debug("##### Setting up Dux Reducer ######");
         builder.setReducer(getChannelReducer()).build();
         log.debug("##### Setting up Circuit breaker ######");
-        if(circuitBreaker.isPresent())
-            builder.setMiddleware(createCircuitBreaker(circuitBreaker.get()));
         this.store = builder.build();
         log.debug("##### Setting up logging of messages #####");
         setupLogger();
         log.debug("##### Setting up subscriber functions based on AgentGraph #####");
         setupSubscribersFromGraph();
+        this.isInitialized = true;
     }
 
     private void setupSubscribersFromGraph() {
@@ -103,6 +113,9 @@ public class AgenticWorkflow {
     }
 
     public void addUserMessage(String chat) {
+        if(!this.isInitialized) {
+            this.init();
+        }
         Message input = new Message(USER, chat);
         log.info("###### Workflow is starting... ######");
         this.store.dispatch(Utilities.actionCreator(ADD_MESSAGE, input));
@@ -112,12 +125,12 @@ public class AgenticWorkflow {
         this.store.dispatch(Utilities.actionCreator(STOP_LOOP, null));
     }
 
-    public String fetchFinalOutput(String agentName) {
+    public String fetchFinalOutput() {
         log.info("###### Fetching final result of Workflow: #######");
         List<Message> allMessages = this.store.getState().getUserMessages();
         for (int i = allMessages.size() - 1; i > 0; i--) {
             Message currentMessage = allMessages.get(i);
-            if(currentMessage.sender().equalsIgnoreCase(agentName)) {
+            if(currentMessage.sender().equalsIgnoreCase(this.terminalAgent)) {
                 return currentMessage.message();
             }
         }
