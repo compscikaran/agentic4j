@@ -1,33 +1,26 @@
 package org.agentic4j.main;
 
-import dev.langchain4j.agent.tool.Tool;
-import dev.langchain4j.agent.tool.ToolSpecification;
-import dev.langchain4j.memory.ChatMemory;
-import dev.langchain4j.memory.chat.ChatMemoryProvider;
-import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.service.tool.ToolExecutor;
-import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.agentic4j.api.Agent;
 import org.agentic4j.main.utils.AgentFactory;
 import org.agentic4j.main.utils.Prompts;
 import org.agentic4j.utils.StopWorkflowTool;
-import org.agentic4j.utils.Utils;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EssayWritingTest {
+public class EssayWritingAssistant {
 
-    private static final Logger log = LoggerFactory.getLogger(EssayWritingTest.class);
+    private static final Logger log = LoggerFactory.getLogger(EssayWritingAssistant.class);
     public static final String WRITER_AGENT = "Writer";
     public static final String CRITIC_AGENT = "Critic";
 
-    @Test
+    public static void main(String[] args) {
+        EssayWritingAssistant test = new EssayWritingAssistant();
+        test.canWriteEssay();
+    }
+
     public void canWriteEssay() {
         AgenticGraph graph = new AgenticGraph();
         AgenticWorkflow workflow = new AgenticWorkflowBuilder()
