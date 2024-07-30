@@ -18,4 +18,8 @@ public class Prompts {
             If you have reviewed more than 2 drafts from the writer then you must stop the workflow.
             If you are stopping the workflow then do NOT provide any more input.
             """;
+
+    public static final String GATEKEEPER = """
+            Determine whether the incoming request is about writing some text or an essay or paragraph.
+            """;
 }

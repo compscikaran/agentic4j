@@ -1,6 +1,7 @@
 package org.agentic4j.main;
 
 import org.agentic4j.api.Channel;
+import org.agentic4j.api.Gatekeeper;
 import org.agentic4j.api.Message;
 import org.flux.store.api.Action;
 import org.flux.store.api.Middleware;
@@ -30,11 +31,13 @@ public class AgenticWorkflow {
     private Predicate<Message> circuitBreaker;
     private String terminalAgent;
     private Boolean isInitialized = false;
+    private Gatekeeper gatekeeper;
 
-    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> circuitBreaker, String terminalAgent) {
+    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> circuitBreaker, String terminalAgent, Gatekeeper gatekeeper) {
         this.graph = graph;
         this.circuitBreaker = circuitBreaker;
         this.terminalAgent = terminalAgent;
+        this.gatekeeper = gatekeeper;
     }
 
     public void init() {
@@ -82,8 +85,10 @@ public class AgenticWorkflow {
 
     private void setupLogger() {
         store.subscribe((state) -> {
-            Message data = state.getUserMessages().getLast();
-            log.info(String.format("%s:\n%s\n", data.sender(),data.message()));
+            if(state.getUserMessages().size() > 0) {
+                Message data = state.getUserMessages().getLast();
+                log.info(String.format("%s:\n%s\n", data.sender(), data.message()));
+            }
         });
     }
 
@@ -116,6 +121,21 @@ public class AgenticWorkflow {
         if(!this.isInitialized) {
             this.init();
         }
+        if(this.gatekeeper != null) {
+            if(this.gatekeeper.chat(chat)) {
+                log.info("###### Passed Gatekeeper check... ######");
+                dispatchChat(chat);
+            } else {
+                log.info("###### Failed Gatekeeper check... ######");
+                this.endLoop();
+            }
+        } else {
+            dispatchChat(chat);
+        }
+
+    }
+
+    private void dispatchChat(String chat) {
         Message input = new Message(USER, chat);
         log.info("###### Workflow is starting... ######");
         this.store.dispatch(Utilities.actionCreator(ADD_MESSAGE, input));
@@ -135,5 +155,9 @@ public class AgenticWorkflow {
             }
         }
         return "";
+    }
+
+    public void setGatekeeper(Gatekeeper gatekeeper) {
+        this.gatekeeper = gatekeeper;
     }
 }

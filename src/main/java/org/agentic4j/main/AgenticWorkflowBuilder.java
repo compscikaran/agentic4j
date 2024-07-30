@@ -1,5 +1,6 @@
 package org.agentic4j.main;
 
+import org.agentic4j.api.Gatekeeper;
 import org.agentic4j.api.Message;
 import org.agentic4j.utils.Utils;
 
@@ -10,6 +11,7 @@ public class AgenticWorkflowBuilder {
     private AgenticGraph graph;
     private Predicate<Message> circuitBreaker = Utils.NO_CIRCUIT_BREAKER;
     private String terminalAgent;
+    private Gatekeeper gatekeeper;
 
     public AgenticWorkflowBuilder setGraph(AgenticGraph graph) {
         this.graph = graph;
@@ -26,7 +28,12 @@ public class AgenticWorkflowBuilder {
         return this;
     }
 
+    public AgenticWorkflowBuilder setGatekeeper(Gatekeeper gatekeeper) {
+        this.gatekeeper = gatekeeper;
+        return this;
+    }
+
     public AgenticWorkflow build() {
-        return new AgenticWorkflow(graph, circuitBreaker, terminalAgent);
+        return new AgenticWorkflow(graph, circuitBreaker, terminalAgent, gatekeeper);
     }
 }
