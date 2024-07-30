@@ -37,5 +37,5 @@ jobs:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-      run: mvn clean deploy -s $GITHUB_WORKSPACE/settings.xml -DbackupPath="./test.json"
+      run: mvn clean deploy -X -s $GITHUB_WORKSPACE/settings.xml
 
