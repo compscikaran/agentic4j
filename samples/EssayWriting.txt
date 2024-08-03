@@ -1,6 +1,7 @@
 com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 org.agentic4j.main.EssayWritingTest
 [main] INFO org.flux.store.utils.TimeTravel - Snapshot updated
 [main] INFO org.flux.store.utils.TimeTravel - Snapshot updated
+[main] INFO org.agentic4j.main.AgenticWorkflow - ###### Passed Gatekeeper check... ######
 [main] INFO org.agentic4j.main.AgenticWorkflow - ###### Workflow is starting... ######
 [main] INFO org.agentic4j.main.AgenticWorkflow - User:
 Write a 500 word essay on Fyodor Dostoyevsky
