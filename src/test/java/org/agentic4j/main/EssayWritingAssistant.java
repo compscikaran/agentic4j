@@ -24,10 +24,14 @@ public class EssayWritingAssistant {
     }
 
     public void canWriteEssay() {
+        Gatekeeper gatekeeper = AgentFactory.createGatekeeper(Prompts.GATEKEEPER, "gpt-4o-mini")
+                .build();
+
         AgenticGraph graph = new AgenticGraph();
         AgenticWorkflow workflow = new AgenticWorkflowBuilder()
                 .setGraph(graph)
                 .setTerminalAgent(WRITER_AGENT)
+                .setGatekeeper(gatekeeper)
                 .build();
 
         Agent writer = AgentFactory.createAgent(Prompts.WRITER, "gpt-4o-mini")
@@ -35,10 +39,7 @@ public class EssayWritingAssistant {
         Agent critic = AgentFactory.createAgent(Prompts.CRITIC, "gpt-4o")
                 .tools(new StopWorkflowTool(workflow::endLoop))
                 .build();
-        Gatekeeper gatekeeper = AgentFactory.createGatekeeper("gpt-4o-mini")
-                .build();
 
-        workflow.setGatekeeper(gatekeeper);
         graph.addAgent(WRITER_AGENT, writer, List.of(CRITIC_AGENT));
         graph.addAgent(CRITIC_AGENT, critic, List.of(WRITER_AGENT));
         graph.addAgent(AgenticWorkflow.USER, null, List.of(WRITER_AGENT));

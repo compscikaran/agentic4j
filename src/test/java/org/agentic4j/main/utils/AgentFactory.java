@@ -27,7 +27,7 @@ public class AgentFactory {
                 .systemMessageProvider(chatMemoryId -> prompt);
     }
 
-    public static AiServices<Gatekeeper> createGatekeeper(String modelName) {
+    public static AiServices<Gatekeeper> createGatekeeper(String prompt, String modelName) {
         OpenAiChatModel model = OpenAiChatModel.builder()
                 .modelName(modelName)
                 .apiKey(apiKey)
@@ -39,6 +39,6 @@ public class AgentFactory {
         return AiServices.builder(Gatekeeper.class)
                 .chatLanguageModel(model)
                 .chatMemory(memory)
-                .systemMessageProvider(chatMemoryId -> Prompts.GATEKEEPER);
+                .systemMessageProvider(chatMemoryId -> prompt);
     }
 }
