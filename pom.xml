@@ -6,7 +6,7 @@
 
     <groupId>dev.engineeringmadness</groupId>
     <artifactId>agentic4j</artifactId>
-    <version>0.1.0</version>
+    <version>0.5.0</version>
     <description>Multi-agent workflow orchestration</description>
     <url>https://github.com/compscikaran/agentic4j</url>
 
