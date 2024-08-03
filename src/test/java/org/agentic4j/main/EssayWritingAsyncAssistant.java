@@ -5,24 +5,25 @@ import org.agentic4j.api.Gatekeeper;
 import org.agentic4j.main.utils.AgentFactory;
 import org.agentic4j.main.utils.Prompts;
 import org.agentic4j.utils.StopWorkflowTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class EssayWritingAssistant {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    private static final Logger log = LoggerFactory.getLogger(EssayWritingAssistant.class);
+public class EssayWritingAsyncAssistant {
+
+    private static final Logger log = LoggerFactory.getLogger(EssayWritingAsyncAssistant.class);
     public static final String WRITER_AGENT = "Writer";
     public static final String CRITIC_AGENT = "Critic";
     public static final String GATEKEEPER = "Gatekeeper";
 
     public static void main(String[] args) throws InterruptedException {
-        EssayWritingAssistant test = new EssayWritingAssistant();
+        EssayWritingAsyncAssistant test = new EssayWritingAsyncAssistant();
         test.canWriteEssay();
     }
 
-    public void canWriteEssay() {
+    public void canWriteEssay() throws InterruptedException {
         Gatekeeper gatekeeper = AgentFactory.createGatekeeper(Prompts.GATEKEEPER, "gpt-4o-mini")
                 .build();
 
@@ -31,6 +32,7 @@ public class EssayWritingAssistant {
                 .setGraph(graph)
                 .setTerminalAgent(WRITER_AGENT)
                 .setGatekeeper(gatekeeper)
+                .asyncProcessing()
                 .build();
 
         Agent writer = AgentFactory.createAgent(Prompts.WRITER, "gpt-4o-mini")

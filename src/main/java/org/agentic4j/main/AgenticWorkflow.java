@@ -6,14 +6,17 @@ import org.agentic4j.api.Message;
 import org.flux.store.api.Action;
 import org.flux.store.api.Middleware;
 import org.flux.store.api.Reducer;
+import org.flux.store.api.Thunk;
 import org.flux.store.main.DuxStore;
 import org.flux.store.main.DuxStoreBuilder;
+import org.flux.store.utils.AsyncProcessor;
 import org.flux.store.utils.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -32,12 +35,14 @@ public class AgenticWorkflow {
     private String terminalAgent;
     private Boolean isInitialized = false;
     private Gatekeeper gatekeeper;
+    private Boolean asyncMode = false;
 
-    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> circuitBreaker, String terminalAgent, Gatekeeper gatekeeper) {
+    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> circuitBreaker, String terminalAgent, Gatekeeper gatekeeper, Boolean asyncMode) {
         this.graph = graph;
         this.circuitBreaker = circuitBreaker;
         this.terminalAgent = terminalAgent;
         this.gatekeeper = gatekeeper;
+        this.asyncMode = asyncMode;
     }
 
     public void init() {
@@ -53,15 +58,19 @@ public class AgenticWorkflow {
         log.debug("##### Setting up Dux Reducer ######");
         builder.setReducer(getChannelReducer()).build();
         log.debug("##### Setting up Circuit breaker ######");
+        builder.setMiddleware(createCircuitBreaker(circuitBreaker));
         this.store = builder.build();
         log.debug("##### Setting up logging of messages #####");
         setupLogger();
         log.debug("##### Setting up subscriber functions based on AgentGraph #####");
-        setupSubscribersFromGraph();
+        if(this.asyncMode)
+            setupAsyncSubscribersUsingThunks();
+        else
+            setupSubscribersUsingActions();
         this.isInitialized = true;
     }
 
-    private void setupSubscribersFromGraph() {
+    private void setupSubscribersUsingActions() {
         for(String agent: this.graph.getAgentGraph().keySet()) {
             Consumer<Channel> subscriber = (state) -> {
                 if(state.getStopLoop())
@@ -79,6 +88,29 @@ public class AgenticWorkflow {
         }
     }
 
+    private void setupAsyncSubscribersUsingThunks() {
+        for(String agent: this.graph.getAgentGraph().keySet()) {
+            Consumer<Channel> subscriber = (state) -> {
+                if(state.getStopLoop())
+                    return;
+                List<String> listeners = this.graph.getAgentGraph().get(agent);
+                Message lastMessage = state.getUserMessages().getLast();
+                if(lastMessage.sender().equalsIgnoreCase(agent)) {
+                    for(String listener: listeners) {
+                        this.store.dispatch((dispatch, getState) -> {
+                            CompletableFuture
+                                    .runAsync(() -> {
+                                        String response = this.graph.chatToAgent(listener, relayMessage(getState.get().getUserMessages().getLast()));
+                                        Action<Message> data = Utilities.actionCreator(ADD_MESSAGE, new Message(listener, response));
+                                        dispatch.accept(data);
+                                    });
+                        });
+                    }
+                }
+            };
+            store.subscribe(subscriber);
+        }
+    }
     private static String relayMessage(Message lastMessage) {
         return lastMessage.sender() + "says :" + lastMessage.message();
     }
@@ -110,10 +142,9 @@ public class AgenticWorkflow {
             Message message = (Message) action.getPayload();
             if(logic.test(message)) {
                 this.endLoop();
-                Action<String> modifiedAction = Utilities.actionCreator(action.getType(), "");
-                next.accept(modifiedAction);
+            } else {
+                next.accept(action);
             }
-            next.accept(action);
         };
     }
 
@@ -121,18 +152,13 @@ public class AgenticWorkflow {
         if(!this.isInitialized) {
             this.init();
         }
-        if(this.gatekeeper != null) {
-            if(this.gatekeeper.chat(chat)) {
-                log.info("###### Passed Gatekeeper check... ######");
-                dispatchChat(chat);
-            } else {
-                log.info("###### Failed Gatekeeper check... ######");
-                this.endLoop();
-            }
-        } else {
+        if(this.gatekeeper.chat(chat)) {
+            log.info("###### Passed Gatekeeper check... ######");
             dispatchChat(chat);
+        } else {
+            log.info("###### Failed Gatekeeper check... ######");
+            this.endLoop();
         }
-
     }
 
     private void dispatchChat(String chat) {
@@ -146,6 +172,9 @@ public class AgenticWorkflow {
     }
 
     public String fetchFinalOutput() {
+        if(asyncMode) {
+            waitForWorkflowCompletion();
+        }
         log.info("###### Fetching final result of Workflow: #######");
         List<Message> allMessages = this.store.getState().getUserMessages();
         for (int i = allMessages.size() - 1; i > 0; i--) {
@@ -157,7 +186,13 @@ public class AgenticWorkflow {
         return "";
     }
 
-    public void setGatekeeper(Gatekeeper gatekeeper) {
-        this.gatekeeper = gatekeeper;
+    private void waitForWorkflowCompletion() {
+        while (!this.store.getState().getStopLoop()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
