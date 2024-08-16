@@ -4,7 +4,7 @@ import org.agentic4j.api.Agent;
 import org.agentic4j.api.Gatekeeper;
 import org.agentic4j.main.utils.AgentFactory;
 import org.agentic4j.main.utils.Prompts;
-import org.agentic4j.utils.StopWorkflowTool;
+import org.agentic4j.utils.Constants;
 
 import java.util.List;
 
@@ -38,14 +38,14 @@ public class EssayWritingAsyncAssistant {
         Agent writer = AgentFactory.createAgent(Prompts.WRITER, "gpt-4o-mini")
                 .build();
         Agent critic = AgentFactory.createAgent(Prompts.CRITIC, "gpt-4o-mini")
-                .tools(new StopWorkflowTool(workflow::endLoop))
+                .tools(workflow.getEndTool())
                 .build();
 
         graph.addAgent(WRITER_AGENT, writer, List.of(CRITIC_AGENT));
         graph.addAgent(CRITIC_AGENT, critic, List.of(WRITER_AGENT));
-        graph.addAgent(AgenticWorkflow.USER, null, List.of(WRITER_AGENT));
+        graph.addAgent(Constants.USER, null, List.of(WRITER_AGENT));
 
-        workflow.addUserMessage("Write a 500 word essay on Fyodor Dostoyevsky");
+        workflow.start("Write a 500 word essay on Fyodor Dostoyevsky");
         log.info(workflow.fetchFinalOutput());
     }
 

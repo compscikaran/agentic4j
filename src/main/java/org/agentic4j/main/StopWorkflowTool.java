@@ -1,10 +1,10 @@
-package org.agentic4j.utils;
+package org.agentic4j.main;
 
 import dev.langchain4j.agent.tool.Tool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StopWorkflowTool {
+class StopWorkflowTool {
 
     private static final Logger log = LoggerFactory.getLogger(StopWorkflowTool.class);
 
