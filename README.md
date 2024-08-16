@@ -14,4 +14,4 @@ I was fascinated by [Andrew NG's talk at Sequioa Capital](https://www.youtube.co
 Key Features -
 1. Create a simple Agent graph defining how agents should talk to each other
 2. Uses Redux to provide a unified communication channel ensuring agents recieve only relevant messages in the conversation
-3. Host a centralized memory management supporting all agents
+3. In-built security features such as Gatekeeper agent, Circuit Breaker, Message timeout
