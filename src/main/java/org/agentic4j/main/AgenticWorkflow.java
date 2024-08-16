@@ -24,13 +24,15 @@ public class AgenticWorkflow {
     private Boolean isInitialized = false;
     private Gatekeeper gatekeeper;
     private Boolean asyncMode = false;
+    private Integer maxMessages;
 
-    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> predicate, String terminalAgent, Gatekeeper gatekeeper, Boolean asyncMode) {
+    public AgenticWorkflow(AgenticGraph graph, Predicate<Message> predicate, String terminalAgent, Gatekeeper gatekeeper, Boolean asyncMode, Integer maxMessages) {
         this.graph = graph;
         this.predicate = predicate;
         this.terminalAgent = terminalAgent;
         this.gatekeeper = gatekeeper;
         this.asyncMode = asyncMode;
+        this.maxMessages = maxMessages;
     }
 
     public void init() {
@@ -44,7 +46,7 @@ public class AgenticWorkflow {
         DuxStoreBuilder<Channel> builder = new DuxStoreBuilder<Channel>();
         builder.setInitialState(new Channel());
         LOGGER.debug("##### Setting up Dux Reducer ######");
-        builder.setReducer(ReducerUtil.getChannelReducer()).build();
+        builder.setReducer(ReducerUtil.getChannelReducer(maxMessages)).build();
         LOGGER.debug("##### Setting up Circuit breaker ######");
         builder.setMiddleware(CircuitBreakerUtil.createCircuitBreaker(predicate, store));
         if(this.asyncMode)
@@ -71,7 +73,7 @@ public class AgenticWorkflow {
         store.subscribe((state) -> {
             if(state.getUserMessages().size() > 0) {
                 Message data = state.getUserMessages().getLast();
-                LOGGER.debug(String.format("%s:\n%s\n", data.sender(), data.message()));
+                LOGGER.info(String.format("%s:\n%s\n", data.sender(), data.message()));
             }
         });
     }

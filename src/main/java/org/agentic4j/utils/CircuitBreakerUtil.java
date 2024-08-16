@@ -18,7 +18,7 @@ public class CircuitBreakerUtil {
         return (store, next, action) -> {
             Message message = (Message) action.getPayload();
             if(logic.test(message)) {
-                LOGGER.info("##### Circuit Breaker is being triggered #####");
+                LOGGER.debug("##### Circuit Breaker is being triggered... #####");
                 duxStore.dispatch(Utilities.actionCreator(Constants.STOP_LOOP, null));
             } else {
                 next.accept(action);
