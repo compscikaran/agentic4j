@@ -1,6 +1,6 @@
-# Agentic4J
+<img src="https://github.com/user-attachments/assets/dce9b169-3a2e-4f3b-a0c3-4c162c623ae7" width="400px" height="auto"/>
 
-A way to define workflows involving multiple AI Agents
+A way to define workflows with multiple AI Agents declaratively
 
 ## How the idea came about
 
