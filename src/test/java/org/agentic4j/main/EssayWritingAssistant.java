@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.logging.Level;
 
 public class EssayWritingAssistant {
 
@@ -31,6 +32,7 @@ public class EssayWritingAssistant {
                 .setGraph(graph)
                 .setTerminalAgent(WRITER_AGENT)
                 .setGatekeeper(gatekeeper)
+                .setMessageTimeout(6)
                 .build();
 
         Agent writer = AgentFactory.createAgent(Prompts.WRITER, "gpt-4o-mini")

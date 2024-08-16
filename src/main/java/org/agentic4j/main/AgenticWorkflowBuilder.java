@@ -12,6 +12,7 @@ public class AgenticWorkflowBuilder {
     private String terminalAgent;
     private Gatekeeper gatekeeper = (message) -> true;
     private Boolean asyncMode = false;
+    private Integer maxMessages;
 
     public AgenticWorkflowBuilder setGraph(AgenticGraph graph) {
         this.graph = graph;
@@ -38,7 +39,12 @@ public class AgenticWorkflowBuilder {
         return this;
     }
 
+    public AgenticWorkflowBuilder setMessageTimeout(int maxMessages) {
+        this.maxMessages = maxMessages;
+        return this;
+    }
+
     public AgenticWorkflow build() {
-        return new AgenticWorkflow(graph, circuitBreaker, terminalAgent, gatekeeper, asyncMode);
+        return new AgenticWorkflow(graph, circuitBreaker, terminalAgent, gatekeeper, asyncMode, maxMessages);
     }
 }
