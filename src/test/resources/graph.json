@@ -1,0 +1,23 @@
+{
+  "graph": {
+    "Writer": {
+      "prompt": "You are a copy writer in a digital agency. Your job is to write an essay based on the\n topic provided by the user.",
+      "listensTo": [
+        "User",
+        "Critic"
+      ],
+      "workflowControl": false
+    },
+    "Critic": {
+      "prompt": "You are a editor in a digital agency. Your job is given the text from the writer\n 1. Point out redundant parts\n 2. Highlight grammatical errors\n 3. Suggest edits which make the text more engaging\n Provide your feedback and wait for the next draft to be given to you by the writer.\n You must provide at least 1 feedback to the writer.\n If you feel the new draft has used your previous input then you must stop the workflow.\n If you have reviewed more than 2 drafts from the writer then you must stop the workflow.\n If you are stopping the workflow then do NOT provide any more input.",
+      "listensTo": [
+        "Writer"
+      ],
+      "workflowControl": true
+    }
+  },
+  "gatekeeper": "Determine whether the incoming request is about writing some text or an essay or paragraph.",
+  "asyncMode": true,
+  "maxMessages": 10,
+  "terminalAgent": "Writer"
+}
